@@ -37,6 +37,11 @@ namespace MovieAPIDB.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
+        public IActionResult Login()
+        {
+            return View();
+        }
+
         public IActionResult MovieSearch()
         {
             return View();
@@ -45,18 +50,22 @@ namespace MovieAPIDB.Controllers
         public async Task<IActionResult> APICall(string title, int year)
         {
             string apikey = "ae3ee0fe";
-            string endpoint = "t=" + title + "&y=" + year + "&apikey=" + apikey;
             title = title.Replace(' ', '+');
+            string endpoint = "?t=" + title + "&y=" + year + "&apikey=" + apikey + "&r=json";
             if (year < 1900 || year > 2020)
             {
-            endpoint ="t="+title+"&apikey="+apikey;
+                endpoint = "?t=" + title + "&apikey=" + apikey + "&r=json";
             }
             var client = new HttpClient();
-            client.BaseAddress = new Uri("http://www.omdbapi.com");
-            //client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; GrandCircus/1.0)");
+            client.BaseAddress = new Uri("http://www.omdbapi.com/");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; GrandCircus/1.0)");
             var data = await client.GetStringAsync(endpoint);
             var result = JsonConvert.DeserializeObject<Movie>(data);
-            return RedirectToAction();
+            return View("MovieView", result);
+        }
+        public IActionResult MovieView(Movie movie)
+        {
+            return View(movie);
         }
     }
 }
