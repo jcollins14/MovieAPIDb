@@ -17,7 +17,6 @@ namespace MovieAPIDB.Models
         }
 
         public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<UserMovie> Favorites { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -38,21 +37,6 @@ namespace MovieAPIDB.Models
 
                entity.Property(e => e.Password).IsRequired().HasColumnName("Password");
            });
-
-            //modelBuilder.Entity<UserMovie>(entity =>
-            //{
-            //    entity.HasKey(e => e.ID);
-
-            //    modelBuilder.Entity<UserMovie>()
-            //     .HasOne<User>(e => e.User)
-            //     .WithMany(x => x.UserMovies)
-            //     .HasForeignKey(e => e.UserID);
-
-            //    modelBuilder.Entity<UserMovie>()
-            //     .HasOne<Movie>(e => e.Movie)
-            //     .WithMany(x => x.UserMovies)
-            //     .HasForeignKey(e => e.ID);
-            //});
         }
     }
 }

@@ -21,6 +21,5 @@ namespace MovieAPIDB.Models
         public string PosterLink { get; set; }
         [JsonProperty("imdbID")]
         public string IMDBID { get; set; }
-        //public virtual ICollection<UserMovie> UserMovies { get; set; }
     }
 }

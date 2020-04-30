@@ -1,0 +1,32 @@
+﻿@model Search
+@{
+    ViewData["Title"] = "ListView";
+}
+
+<h1>Search Results</h1>
+<hr />
+@{ 
+    for (int i = 0; i < Model.Results.Count; i++)
+    {
+    <dl class="row">
+        <dt>
+            <img src=@Model.Results[i].Poster>
+        </dt>
+        <dt class="col-sm-2">
+            Title:
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Results[i].Title
+        </dd>
+        <dt class="col-sm-2">
+            Year:
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Results[i].Year
+        </dd>
+    </dl>
+    <hr />
+    }
+}
+
+

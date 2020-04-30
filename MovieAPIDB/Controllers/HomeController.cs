@@ -42,21 +42,43 @@ namespace MovieAPIDB.Controllers
             return View();
         }
 
-        public async Task<IActionResult> APICall(string title, int year)
+        public async Task<IActionResult> APICall(string imdb)
         {
             string apikey = "ae3ee0fe";
-            title = title.Replace(' ', '+');
-            string endpoint = "?t=" + title + "&y=" + year + "&apikey=" + apikey + "&r=json";
-            if (year < 1900 || year > 2020)
-            {
-                endpoint = "?t=" + title + "&apikey=" + apikey + "&r=json";
-            }
+            string endpoint = "?i=" + imdb + "&type=movie&apikey=" + apikey + "&r=json";
             var client = new HttpClient();
             client.BaseAddress = new Uri("http://www.omdbapi.com/");
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; GrandCircus/1.0)");
             var data = await client.GetStringAsync(endpoint);
             var result = JsonConvert.DeserializeObject<Movie>(data);
             return View("MovieView", result);
+        }
+
+        public async Task<IActionResult> APISearch(string title, int year)
+        {
+            string apikey = "ae3ee0fe";
+            title = title.Replace(' ', '+');
+            string endpoint = "?s=" + title + "&y=" + year + "&type=movie&r=json&apikey=" + apikey;
+            if (year < 1900 || year > 2020)
+            {
+                endpoint = "?s=" + title + "&type=movie&r=json&apikey=" + apikey;
+            }
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("http://www.omdbapi.com/");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; GrandCircus/1.0)");
+            string data = await client.GetStringAsync(endpoint);
+            Search results = JsonConvert.DeserializeObject<Search>(data);
+            if (results.TotalResults > 10)
+            {
+                endpoint += "&page=2";
+                data = await client.GetStringAsync(endpoint);
+                Search page2 = JsonConvert.DeserializeObject<Search>(data);
+                foreach (SearchResult result in page2.Results)
+                {
+                    results.Results.Add(result);
+                }
+            }
+            return View("ListView", results);
         }
 
         public IActionResult MovieView(Movie movie)
