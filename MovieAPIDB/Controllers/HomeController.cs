@@ -5,8 +5,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging; //If this becomes an issue ...
 using MovieAPIDB.Models;
 using Newtonsoft.Json;
 
@@ -15,6 +17,8 @@ namespace MovieAPIDB.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+
+        private MovieAPIDBContext _context = new MovieAPIDBContext();
 
         public HomeController(ILogger<HomeController> logger)
         {
@@ -37,7 +41,23 @@ namespace MovieAPIDB.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        public IActionResult Login()
+        public IActionResult Login(User model)
+        {
+            var user = _context.Users.Where(x => x.Username == model.Username).FirstOrDefault();
+            if(!ReferenceEquals(User, null))
+            {
+                HttpContext.Session.SetInt32("UserId", user.ID);
+                HttpContext.Session.SetString("UserName", user.Username);
+                HttpContext.Session.SetString("Password",user.Password);
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                return RedirectToAction("Login");
+            }
+        }
+
+        public IActionResult Register()
         {
             return View();
         }
@@ -52,6 +72,10 @@ namespace MovieAPIDB.Controllers
             string apikey = "ae3ee0fe";
             title = title.Replace(' ', '+');
             string endpoint = "?t=" + title + "&y=" + year + "&apikey=" + apikey + "&r=json";
+            //if(title == null)
+            //{
+            //    NullReferenceException
+            //}
             if (year < 1900 || year > 2020)
             {
                 endpoint = "?t=" + title + "&apikey=" + apikey + "&r=json";
