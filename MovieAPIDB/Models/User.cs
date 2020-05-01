@@ -14,6 +14,5 @@ namespace MovieAPIDB.Models
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }
-        //public virtual ICollection<UserMovie> UserMovies { get; set; }
     }
 }

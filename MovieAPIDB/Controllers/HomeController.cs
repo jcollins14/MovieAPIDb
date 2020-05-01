@@ -22,7 +22,6 @@ namespace MovieAPIDB.Controllers
 
         public HomeController(ILogger<HomeController> logger)
         {
-            _logger = logger;
         }
 
         public IActionResult Index()
@@ -94,26 +93,66 @@ namespace MovieAPIDB.Controllers
             return View();
         }
 
-        public async Task<IActionResult> APICall(string title, int year)
+        public async Task<IActionResult> DetailedMovieView(string imdb)
         {
             string apikey = "ae3ee0fe";
-            title = title.Replace(' ', '+');
-            string endpoint = "?t=" + title + "&y=" + year + "&apikey=" + apikey + "&r=json";
-            //if(title == null)
-            //{
-            //    NullReferenceException
-            //}
-            if (year < 1900 || year > 2020)
+            string endpoint = "?i=" + imdb + "&type=movie&apikey=" + apikey + "&r=json";
+            var client = new HttpClient
             {
-                endpoint = "?t=" + title + "&apikey=" + apikey + "&r=json";
-            }
-            var client = new HttpClient();
-            client.BaseAddress = new Uri("http://www.omdbapi.com/");
+                BaseAddress = new Uri("http://www.omdbapi.com/")
+            };
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; GrandCircus/1.0)");
             var data = await client.GetStringAsync(endpoint);
             var result = JsonConvert.DeserializeObject<Movie>(data);
-            return View("MovieView", result);
+            return View(result);
         }
+
+        public async Task<IActionResult> APISearch(string title, int year)
+        {
+            string apikey = "ae3ee0fe";
+            title = title.Replace(' ', '+');
+            string endpoint = "?s=" + title + "&y=" + year + "&type=movie&r=json&apikey=" + apikey;
+            //omits the year from the endpoint if not in a current time
+            if (year < 1900 || year > 2020)
+            {
+                endpoint = "?s=" + title + "&type=movie&r=json&apikey=" + apikey;
+            }
+            var client = new HttpClient
+            {
+                BaseAddress = new Uri("http://www.omdbapi.com/")
+            };
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; GrandCircus/1.0)");
+            string data = await client.GetStringAsync(endpoint);
+            Search results = JsonConvert.DeserializeObject<Search>(data);
+            //calls the api again if more than one page of results
+            if (results.TotalResults > 10)
+            {
+                endpoint += "&page=2";
+                data = await client.GetStringAsync(endpoint);
+                Search page2 = JsonConvert.DeserializeObject<Search>(data);
+                foreach (SearchResult result in page2.Results)
+                {
+                    results.Results.Add(result);
+                }
+            }
+            //remove duplicates from list by imdbID
+            for (int i = 0; i < results.Results.Count; i++)
+            {
+                for (int a = 0; a < results.Results.Count; a++)
+                {
+                    if (results.Results[i].ImdbID == results.Results[a].ImdbID && i != a)
+                    {
+                        results.Results.RemoveAt(a);
+                    }
+                }
+            }
+            if (results.Results.Count == 1)
+            {
+                 DetailedMovieView(results.Results[0].ImdbID);
+            }
+            return View("ListView", results);
+        }
+
         public IActionResult MovieView(Movie movie)
         {
             return View(movie);
