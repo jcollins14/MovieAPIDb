@@ -1,0 +1,18 @@
+﻿
+@{
+    ViewData["Title"] = "MovieSearch";
+}
+
+<h1>Movie Search</h1>
+
+<div>
+    <form asp-action="APISearch" method="Post">
+        <label for="title">Movie Title: </label>
+        <input type="text" name="title" />
+        <br />
+        <label for="year">Year: </label>
+        <input type="number" name="year" step="1" value="0"/>
+        <br />
+        <input type="submit" value="search"/>
+    </form>
+</div>
