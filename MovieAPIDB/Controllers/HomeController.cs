@@ -116,7 +116,7 @@ namespace MovieAPIDB.Controllers
             title = title.Replace(' ', '+');
             string endpoint = "?s=" + title + "&y=" + year + "&type=movie&r=json&apikey=" + apikey;
             //omits the year from the endpoint if not in a current time
-            if (year < 1900 || year > 2020)
+            if (year < 1850 || year > 2020)
             {
                 endpoint = "?s=" + title + "&type=movie&r=json&apikey=" + apikey;
             }
