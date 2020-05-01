@@ -101,9 +101,18 @@ namespace MovieAPIDB.Controllers
             return View(result);
         }
 
+        public IActionResult TitleError()
+        {
+            return View();
+        }
+
         public async Task<IActionResult> APISearch(string title, int year)
         {
             string apikey = "ae3ee0fe";
+            if (title is null)
+            {
+                return RedirectToAction("TitleError");
+            }
             title = title.Replace(' ', '+');
             string endpoint = "?s=" + title + "&y=" + year + "&type=movie&r=json&apikey=" + apikey;
             //omits the year from the endpoint if not in a current time
@@ -129,6 +138,11 @@ namespace MovieAPIDB.Controllers
                     results.Results.Add(result);
                 }
             }
+            //redirects to error page if no results found
+            if (results.TotalResults == 0)
+            {
+                return RedirectToAction("NoResult");
+            }
             //remove duplicates from list by imdbID
             for (int i = 0; i < results.Results.Count; i++)
             {
@@ -140,11 +154,16 @@ namespace MovieAPIDB.Controllers
                     }
                 }
             }
+            //redirects to summary page if exactly one result found
             if (results.Results.Count == 1)
             {
                 return RedirectToAction("DetailedMovieView", new { imdb = results.Results[0].ImdbID});
             }
             return View("ListView", results);
+        }
+        public IActionResult NoResult()
+        {
+            return View();
         }
     }
 }
