@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging; //If this becomes an issue ...
 using MovieAPIDB.Models;
 using Newtonsoft.Json;
 
@@ -16,11 +15,8 @@ namespace MovieAPIDB.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        private MovieAPIDBContext _context = new MovieAPIDBContext();
-
-        public HomeController(ILogger<HomeController> logger)
+        private readonly MovieAPIDBContext _context = new MovieAPIDBContext();
+        public HomeController()
         {
         }
 
@@ -49,7 +45,7 @@ namespace MovieAPIDB.Controllers
         public IActionResult LoginUser(User model)
         {
             var user = _context.Users.Where(x => x.Username == model.Username).FirstOrDefault();
-            if(!ReferenceEquals(user, null))
+            if(user is object)
             {
                 HttpContext.Session.SetInt32("UserId", user.ID);
                 HttpContext.Session.SetString("Username", user.Username);
@@ -72,18 +68,16 @@ namespace MovieAPIDB.Controllers
         {
             if (ModelState.IsValid)
             {
-                using (var context = new MovieAPIDBContext())
+                using var context = new MovieAPIDBContext();
+                var user = new User()
                 {
-                    var user = new User()
-                    {
-                        Username = model.Username,
-                        Password = model.Password
-                    };
-                    context.Users.Add(user);
-                    context.SaveChanges();
+                    Username = model.Username,
+                    Password = model.Password
+                };
+                context.Users.Add(user);
+                context.SaveChanges();
 
-                    return RedirectToAction("Index");
-                }
+                return RedirectToAction("Index");
             }
             return RedirectToAction("Register");
         }
@@ -148,14 +142,9 @@ namespace MovieAPIDB.Controllers
             }
             if (results.Results.Count == 1)
             {
-                 DetailedMovieView(results.Results[0].ImdbID);
+                return RedirectToAction("DetailedMovieView", new { imdb = results.Results[0].ImdbID});
             }
             return View("ListView", results);
-        }
-
-        public IActionResult MovieView(Movie movie)
-        {
-            return View(movie);
         }
     }
 }
