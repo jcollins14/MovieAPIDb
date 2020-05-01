@@ -41,13 +41,19 @@ namespace MovieAPIDB.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        public IActionResult Login(User model)
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult LoginUser(User model)
         {
             var user = _context.Users.Where(x => x.Username == model.Username).FirstOrDefault();
-            if(!ReferenceEquals(User, null))
+            if(!ReferenceEquals(user, null))
             {
                 HttpContext.Session.SetInt32("UserId", user.ID);
-                HttpContext.Session.SetString("UserName", user.Username);
+                HttpContext.Session.SetString("Username", user.Username);
                 HttpContext.Session.SetString("Password",user.Password);
                 return RedirectToAction("Index");
             }
@@ -60,6 +66,27 @@ namespace MovieAPIDB.Controllers
         public IActionResult Register()
         {
             return View();
+        }
+
+        [HttpPost]
+        public IActionResult RegisterUser([Bind("Username, Password")] User model)
+        {
+            if (ModelState.IsValid)
+            {
+                using (var context = new MovieAPIDBContext())
+                {
+                    var user = new User()
+                    {
+                        Username = model.Username,
+                        Password = model.Password
+                    };
+                    context.Users.Add(user);
+                    context.SaveChanges();
+
+                    return RedirectToAction("Index");
+                }
+            }
+            return RedirectToAction("Register");
         }
 
         public IActionResult MovieSearch()

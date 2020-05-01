@@ -1,14 +1,18 @@
-﻿@model MovieAPIDB.Models.User
+﻿@model User
 
 @{
-    ViewData["Title"] = "View";
+    ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
     <div>
         <h4>Login</h4>
         <br>
+
+        <p>If you are not already a registered user, please click <a asp-action="Register" asp-controller="Home">here</a> to register!</p>
         <div class="row">
             <div class="col-md-4">
-                <form asp-controller="Home" asp-action="Login">
+                <form asp-controller="Home" asp-action="LoginUser">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <div class="form-group">
                         <label asp-for="Username" class="control-label"></label>
@@ -26,5 +30,9 @@
                 </form>
             </div>
         </div>
-
     </div>
+
+<!--Need this fgor the validation statement-->
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
