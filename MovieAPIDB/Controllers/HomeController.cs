@@ -49,17 +49,31 @@ namespace MovieAPIDB.Controllers
         public IActionResult LoginUser(User model)
         {
             var user = _context.Users.Where(x => x.Username == model.Username).FirstOrDefault();
+
             if(!ReferenceEquals(user, null))
             {
                 HttpContext.Session.SetInt32("UserId", user.ID);
                 HttpContext.Session.SetString("Username", user.Username);
                 HttpContext.Session.SetString("Password",user.Password);
-                return RedirectToAction("Index");
+
+                if (model.Password == user.Password)
+                {
+                    ViewBag.UN = user.Username;
+                    return RedirectToAction("WelcomeLogin");
+                }
+
+                return RedirectToAction("LoginError");
             }
             else
             {
                 return RedirectToAction("Login");
             }
+        }
+
+        public IActionResult WelcomeLogin()
+        {
+
+            return View();
         }
 
         public IActionResult Register()
@@ -113,7 +127,7 @@ namespace MovieAPIDB.Controllers
             title = title.Replace(' ', '+');
             string endpoint = "?s=" + title + "&y=" + year + "&type=movie&r=json&apikey=" + apikey;
             //omits the year from the endpoint if not in a current time
-            if (year < 1900 || year > 2020)
+            if (year < 1850 || year > 2020)
             {
                 endpoint = "?s=" + title + "&type=movie&r=json&apikey=" + apikey;
             }
