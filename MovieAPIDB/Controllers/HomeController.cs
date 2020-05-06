@@ -26,11 +26,6 @@ namespace MovieAPIDB.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -51,7 +46,13 @@ namespace MovieAPIDB.Controllers
                 HttpContext.Session.SetInt32("UserId", user.ID);
                 HttpContext.Session.SetString("Username", user.Username);
                 HttpContext.Session.SetString("Password",user.Password);
-                return RedirectToAction("Index");
+
+                if (model.Password == user.Password)
+                {
+                    return RedirectToAction("WelcomeLogin");
+                }
+
+                return RedirectToAction("LoginError");
             }
             else
             {
@@ -59,26 +60,43 @@ namespace MovieAPIDB.Controllers
             }
         }
 
+        public IActionResult WelcomeLogin()
+        {
+            return View();
+        }
+
         public IActionResult Register()
         {
             return View();
         }
 
+        public IActionResult LoginError()
+        {
+            return View();
+        }
+
         [HttpPost]
-        public IActionResult RegisterUser([Bind("Username, Password")] User model)
+        public IActionResult RegisterUser([Bind("Username, Password, ConfirmPassword")] User model)
         {
             if (ModelState.IsValid)
             {
                 using var context = new MovieAPIDBContext();
                 var user = new User()
                 {
-                    Username = model.Username,
-                    Password = model.Password
-                };
-                context.Users.Add(user);
-                context.SaveChanges();
 
-                return RedirectToAction("Index");
+                    if(model.Password == model.ConfirmPassword)
+                    {
+                        var user = new User()
+                        {
+                            Username = model.Username,
+                            Password = model.Password
+                        };
+                        context.Users.Add(user);
+                        context.SaveChanges();
+
+                        return RedirectToAction("Index");
+                    }
+                }
             }
             return RedirectToAction("Register");
         }

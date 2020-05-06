@@ -24,6 +24,7 @@ namespace MovieAPIDB
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //Needed for working with Sessions
             services.AddSession();
             services.AddControllersWithViews();
         }
@@ -43,7 +44,7 @@ namespace MovieAPIDB
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseSession();
+            app.UseSession();  //Also needed for working with sessions
             app.UseRouting();
 
             app.UseAuthorization();
