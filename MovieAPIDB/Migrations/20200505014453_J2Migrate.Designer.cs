@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MovieAPIDB.Models;
 
 namespace MovieAPIDB.Migrations
 {
     [DbContext(typeof(MovieAPIDBContext))]
-    partial class MovieAPIDBContextModelSnapshot : ModelSnapshot
+    [Migration("20200505014453_J2Migrate")]
+    partial class J2Migrate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

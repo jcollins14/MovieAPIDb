@@ -45,7 +45,7 @@
                         @Model.Results[i].Year
                     </td>
                     <td style="vertical-align:middle">
-                        @Html.ActionLink("Summary", "DetailedMovieView", new { imdb = Model.Results[i].ImdbID })
+                        <input type="button" value="Summary" class="btn btn-primary" onclick="location.href='@Url.Action("DetailedMovieView", new { imdb = Model.Results[i].ImdbID })'" />
                     </td>
                 </tr>   
             }

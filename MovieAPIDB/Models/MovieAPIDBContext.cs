@@ -17,13 +17,14 @@ namespace MovieAPIDB.Models
         }
 
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Favorite> Favorites { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                //optionsBuilder.UseSqlServer("Server=Chocobo\\SQLEXPRESS;Database=MovieAPIDB;Trusted_Connection=True;");
-                optionsBuilder.UseSqlServer("Server=ANDREW-DESKTOP\\SQLEXPRESS;Database=MovieAPIDB;Trusted_Connection=True;");
+                optionsBuilder.UseSqlServer("Server=Chocobo\\SQLEXPRESS;Database=MovieAPIDB;Trusted_Connection=True;");
+                //optionsBuilder.UseSqlServer("Server=ANDREW-DESKTOP\\SQLEXPRESS;Database=MovieAPIDB;Trusted_Connection=True;");
             }
         }
 

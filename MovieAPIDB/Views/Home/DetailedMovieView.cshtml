@@ -11,37 +11,37 @@
     <hr />
     <img src=@Model.PosterLink>
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Title)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Title)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.YearReleased)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.YearReleased)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Genres)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Genres)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Plot)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Plot)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.IMDBID)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             <a href="https://www.imdb.com/title/@Model.IMDBID">@Html.DisplayFor(model => model.IMDBID)</a>
         </dd>
     </dl>
-</div>
-<div>
+    <hr />
+    <input type="button" value="Add Favorite" class="btn btn-primary" onclick="location.href='@Url.Action("AddFavorite", new { imdb = Model.IMDBID })'" />
 </div>
