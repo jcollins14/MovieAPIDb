@@ -43,5 +43,14 @@
         </dd>
     </dl>
     <hr />
-    <input type="button" value="Add Favorite" class="btn btn-primary" onclick="location.href='@Url.Action("AddFavorite", new { imdb = Model.IMDBID })'" />
+    @{
+        if (ViewBag.Fav)
+        {
+            <input type="button" value="Remove Favorite" class="btn btn-primary" onclick="location.href='@Url.Action("RemoveFavorite", new { imdb = Model.IMDBID })'" />
+        }
+        else
+        {
+            <input type="button" value="Add Favorite" class="btn btn-primary" onclick="location.href='@Url.Action("AddFavorite", new { imdb = Model.IMDBID })'" />
+        }
+    }
 </div>
