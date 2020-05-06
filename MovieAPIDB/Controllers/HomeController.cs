@@ -29,11 +29,6 @@ namespace MovieAPIDB.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -58,7 +53,6 @@ namespace MovieAPIDB.Controllers
 
                 if (model.Password == user.Password)
                 {
-                    ViewBag.UN = user.Username;
                     return RedirectToAction("WelcomeLogin");
                 }
 
@@ -72,7 +66,6 @@ namespace MovieAPIDB.Controllers
 
         public IActionResult WelcomeLogin()
         {
-
             return View();
         }
 
@@ -81,22 +74,30 @@ namespace MovieAPIDB.Controllers
             return View();
         }
 
+        public IActionResult LoginError()
+        {
+            return View();
+        }
+
         [HttpPost]
-        public IActionResult RegisterUser([Bind("Username, Password")] User model)
+        public IActionResult RegisterUser([Bind("Username, Password, ConfirmPassword")] User model)
         {
             if (ModelState.IsValid)
             {
                 using (var context = new MovieAPIDBContext())
                 {
-                    var user = new User()
+                    if(model.Password == model.ConfirmPassword)
                     {
-                        Username = model.Username,
-                        Password = model.Password
-                    };
-                    context.Users.Add(user);
-                    context.SaveChanges();
+                        var user = new User()
+                        {
+                            Username = model.Username,
+                            Password = model.Password
+                        };
+                        context.Users.Add(user);
+                        context.SaveChanges();
 
-                    return RedirectToAction("Index");
+                        return RedirectToAction("Index");
+                    }
                 }
             }
             return RedirectToAction("Register");

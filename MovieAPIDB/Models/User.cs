@@ -17,7 +17,8 @@ namespace MovieAPIDB.Models
         public string Password { get; set; }
 
         [NotMapped] // Does not effect with your database
-        [Compare("Password")]
+        [DataType(DataType.Password)]
+        [Compare("Password", ErrorMessage = "Confirm password does not match")]
         public string ConfirmPassword { get; set; }
     }
 }
