@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
@@ -164,6 +165,66 @@ namespace MovieAPIDB.Controllers
         public IActionResult NoResult()
         {
             return View();
+        }
+
+        public IActionResult AddFavorite(string imdb)
+        {
+            int userID = (int)HttpContext.Session.GetInt32("UserId");
+            Favorite add = new Favorite()
+            {
+                UserID = userID,
+                IMDBID = imdb
+            };
+            var check = _context.Favorites.Where(x => x.UserID == userID && x.IMDBID == imdb).FirstOrDefault();
+            if (check is null)
+            {
+                _context.Favorites.Add(add);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("Favorites");
+        }
+
+        public IActionResult RemoveFavorite(string imdb)
+        {
+            int userID = (int)HttpContext.Session.GetInt32("UserId");
+            Favorite add = new Favorite()
+            {
+                UserID = userID,
+                IMDBID = imdb
+            };
+            var check = _context.Favorites.Where(x => x.UserID == userID && x.IMDBID == imdb).FirstOrDefault();
+            if (check != null)
+            {
+                _context.Favorites.Remove(add);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("Favorites");
+        }
+
+        public async Task<IActionResult> Favorites()
+        {
+            int userID = (int)HttpContext.Session.GetInt32("UserId");
+            List<Favorite> data = _context.Favorites.Where(x => x.UserID == userID).ToList();
+            string apikey = "ae3ee0fe";
+            var client = new HttpClient
+            {
+                BaseAddress = new Uri("http://www.omdbapi.com/")
+            };
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; GrandCircus/1.0)");
+            Search favorites = new Search()
+            {
+                TotalResults = (int)data.Count,
+                Results = new List<SearchResult>()
+            };
+            foreach (Favorite item in data)
+            {
+                string endpoint = "?i=" + item.IMDBID + "&type=movie&apikey=" + apikey + "&r=json";
+                var result = await client.GetStringAsync(endpoint);
+                Movie results = JsonConvert.DeserializeObject<Movie>(result);
+                SearchResult add = results.MapToSearchResult();
+                favorites.Results.Add(add);
+            }
+            return View("ListView",favorites);
         }
     }
 }

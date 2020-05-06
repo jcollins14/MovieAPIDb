@@ -17,6 +17,7 @@ namespace MovieAPIDB.Models
         }
 
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Favorite> Favorites { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
