@@ -29,11 +29,6 @@ namespace MovieAPIDB.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -49,12 +44,19 @@ namespace MovieAPIDB.Controllers
         public IActionResult LoginUser(User model)
         {
             var user = _context.Users.Where(x => x.Username == model.Username).FirstOrDefault();
+
             if(!ReferenceEquals(user, null))
             {
                 HttpContext.Session.SetInt32("UserId", user.ID);
                 HttpContext.Session.SetString("Username", user.Username);
                 HttpContext.Session.SetString("Password",user.Password);
-                return RedirectToAction("Index");
+
+                if (model.Password == user.Password)
+                {
+                    return RedirectToAction("WelcomeLogin");
+                }
+
+                return RedirectToAction("LoginError");
             }
             else
             {
@@ -62,27 +64,40 @@ namespace MovieAPIDB.Controllers
             }
         }
 
+        public IActionResult WelcomeLogin()
+        {
+            return View();
+        }
+
         public IActionResult Register()
         {
             return View();
         }
 
+        public IActionResult LoginError()
+        {
+            return View();
+        }
+
         [HttpPost]
-        public IActionResult RegisterUser([Bind("Username, Password")] User model)
+        public IActionResult RegisterUser([Bind("Username, Password, ConfirmPassword")] User model)
         {
             if (ModelState.IsValid)
             {
                 using (var context = new MovieAPIDBContext())
                 {
-                    var user = new User()
+                    if(model.Password == model.ConfirmPassword)
                     {
-                        Username = model.Username,
-                        Password = model.Password
-                    };
-                    context.Users.Add(user);
-                    context.SaveChanges();
+                        var user = new User()
+                        {
+                            Username = model.Username,
+                            Password = model.Password
+                        };
+                        context.Users.Add(user);
+                        context.SaveChanges();
 
-                    return RedirectToAction("Index");
+                        return RedirectToAction("Index");
+                    }
                 }
             }
             return RedirectToAction("Register");
@@ -113,7 +128,7 @@ namespace MovieAPIDB.Controllers
             title = title.Replace(' ', '+');
             string endpoint = "?s=" + title + "&y=" + year + "&type=movie&r=json&apikey=" + apikey;
             //omits the year from the endpoint if not in a current time
-            if (year < 1900 || year > 2020)
+            if (year < 1850 || year > 2020)
             {
                 endpoint = "?s=" + title + "&type=movie&r=json&apikey=" + apikey;
             }
