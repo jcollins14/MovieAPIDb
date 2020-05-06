@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -41,14 +42,15 @@ namespace MovieAPIDB.Controllers
         public IActionResult LoginUser(User model)
         {
             var user = _context.Users.Where(x => x.Username == model.Username).FirstOrDefault();
-            if(user is object)
+            if (user is object)
             {
                 HttpContext.Session.SetInt32("UserId", user.ID);
                 HttpContext.Session.SetString("Username", user.Username);
-                HttpContext.Session.SetString("Password",user.Password);
+                HttpContext.Session.SetString("Password", user.Password);
 
                 if (model.Password == user.Password)
                 {
+                    ViewBag.Name = user.Username;
                     return RedirectToAction("WelcomeLogin");
                 }
 
@@ -81,21 +83,17 @@ namespace MovieAPIDB.Controllers
             if (ModelState.IsValid)
             {
                 using var context = new MovieAPIDBContext();
-                var user = new User()
+                    if (model.Password == model.ConfirmPassword)
                 {
-
-                    if(model.Password == model.ConfirmPassword)
+                    var user = new User()
                     {
-                        var user = new User()
-                        {
-                            Username = model.Username,
-                            Password = model.Password
-                        };
-                        context.Users.Add(user);
-                        context.SaveChanges();
+                        Username = model.Username,
+                        Password = model.Password
+                    };
+                    context.Users.Add(user);
+                    context.SaveChanges();
 
-                        return RedirectToAction("Index");
-                    }
+                    return RedirectToAction("Index");
                 }
             }
             return RedirectToAction("Register");
@@ -103,6 +101,10 @@ namespace MovieAPIDB.Controllers
 
         public IActionResult MovieSearch()
         {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login");
+            }
             return View();
         }
 
@@ -117,6 +119,16 @@ namespace MovieAPIDB.Controllers
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; GrandCircus/1.0)");
             var data = await client.GetStringAsync(endpoint);
             var result = JsonConvert.DeserializeObject<Movie>(data);
+            int userID = (int)HttpContext.Session.GetInt32("UserId");
+            var check = _context.Favorites.Where(x => x.UserID == userID && x.IMDBID == result.IMDBID).FirstOrDefault();
+            if (check is object)
+            {
+                ViewBag.Fav = true;
+            }
+            else
+            {
+                ViewBag.Fav = false;
+            }
             return View(result);
         }
 
@@ -199,7 +211,7 @@ namespace MovieAPIDB.Controllers
                 _context.Favorites.Add(add);
                 _context.SaveChanges();
             }
-            return RedirectToAction("Favorites");
+            return RedirectToAction("DetailedMovieView", new { imdb = add.IMDBID });
         }
 
         public IActionResult RemoveFavorite(string imdb)
@@ -213,7 +225,7 @@ namespace MovieAPIDB.Controllers
             var check = _context.Favorites.Where(x => x.UserID == userID && x.IMDBID == imdb).FirstOrDefault();
             if (check != null)
             {
-                _context.Favorites.Remove(add);
+                _context.Favorites.Remove(check);
                 _context.SaveChanges();
             }
             return RedirectToAction("Favorites");
@@ -221,6 +233,10 @@ namespace MovieAPIDB.Controllers
 
         public async Task<IActionResult> Favorites()
         {
+            if (HttpContext.Session.GetInt32("UserId") == null)
+            {
+                return RedirectToAction("Login");
+            }
             int userID = (int)HttpContext.Session.GetInt32("UserId");
             List<Favorite> data = _context.Favorites.Where(x => x.UserID == userID).ToList();
             string apikey = "ae3ee0fe";
@@ -242,7 +258,13 @@ namespace MovieAPIDB.Controllers
                 SearchResult add = results.MapToSearchResult();
                 favorites.Results.Add(add);
             }
-            return View("ListView",favorites);
+            return View("Favorites",favorites);
+        }
+
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Index");
         }
     }
 }
