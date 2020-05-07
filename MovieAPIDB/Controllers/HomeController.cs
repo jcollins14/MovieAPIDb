@@ -41,11 +41,11 @@ namespace MovieAPIDB.Controllers
         public IActionResult LoginUser(User model)
         {
             var user = _context.Users.Where(x => x.Username == model.Username).FirstOrDefault();
-            if(user is object)
+            if (user is object)
             {
                 HttpContext.Session.SetInt32("UserId", user.ID);
                 HttpContext.Session.SetString("Username", user.Username);
-                HttpContext.Session.SetString("Password",user.Password);
+                HttpContext.Session.SetString("Password", user.Password);
 
                 if (model.Password == user.Password)
                 {
@@ -81,10 +81,8 @@ namespace MovieAPIDB.Controllers
             if (ModelState.IsValid)
             {
                 using var context = new MovieAPIDBContext();
-                var user = new User()
                 {
-
-                    if(model.Password == model.ConfirmPassword)
+                    if (model.Password == model.ConfirmPassword)
                     {
                         var user = new User()
                         {
@@ -96,7 +94,7 @@ namespace MovieAPIDB.Controllers
 
                         return RedirectToAction("Index");
                     }
-                }
+                };
             }
             return RedirectToAction("Register");
         }
