@@ -23,8 +23,8 @@ namespace MovieAPIDB.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                //optionsBuilder.UseSqlServer("Server=Chocobo\\SQLEXPRESS;Database=MovieAPIDB;Trusted_Connection=True;");
-                optionsBuilder.UseSqlServer("Server=ANDREW-DESKTOP\\SQLEXPRESS;Database=MovieAPIDB;Trusted_Connection=True;");
+                optionsBuilder.UseSqlServer("Server=Chocobo\\SQLEXPRESS;Database=MovieAPIDB;Trusted_Connection=True;");
+                //optionsBuilder.UseSqlServer("Server=ANDREW-DESKTOP\\SQLEXPRESS;Database=MovieAPIDB;Trusted_Connection=True;");
             }
         }
 

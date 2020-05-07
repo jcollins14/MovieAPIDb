@@ -1,23 +1,20 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using MovieAPIDB.Models;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MovieAPIDB.Models;
-using Newtonsoft.Json;
 
 namespace MovieAPIDB.Controllers
 {
     public class HomeController : Controller
     {
         private readonly MovieAPIDBContext _context = new MovieAPIDBContext();
+
         public HomeController()
         {
         }
@@ -80,20 +77,24 @@ namespace MovieAPIDB.Controllers
         [HttpPost]
         public IActionResult RegisterUser([Bind("Username, Password, ConfirmPassword")] User model)
         {
+            var duplicate = _context.Users.Where(x => x.Username == model.Username).FirstOrDefault();
+            if (duplicate is object)
+            {
+                ModelState.AddModelError("Username", "Username must be unique");
+            }
             if (ModelState.IsValid)
             {
-                using var context = new MovieAPIDBContext();
-
-                    if (model.Password == model.ConfirmPassword)
+                if (model.Password == model.ConfirmPassword)
                 {
                     var user = new User()
                     {
                         Username = model.Username,
                         Password = model.Password
                     };
-                    context.Users.Add(user);
-                    context.SaveChanges();
+                    _context.Users.Add(user);
+                    _context.SaveChanges();
 
+                    LoginUser(user);
                     return RedirectToAction("Index");
                 }
             }
@@ -102,6 +103,7 @@ namespace MovieAPIDB.Controllers
 
         public IActionResult MovieSearch()
         {
+            //login check
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
                 return RedirectToAction("Login");
@@ -120,6 +122,7 @@ namespace MovieAPIDB.Controllers
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; GrandCircus/1.0)");
             var data = await client.GetStringAsync(endpoint);
             var result = JsonConvert.DeserializeObject<Movie>(data);
+            //check if movie is favorite to determine which button to display
             int userID = (int)HttpContext.Session.GetInt32("UserId");
             var check = _context.Favorites.Where(x => x.UserID == userID && x.IMDBID == result.IMDBID).FirstOrDefault();
             if (check is object)
@@ -189,10 +192,11 @@ namespace MovieAPIDB.Controllers
             //redirects to summary page if exactly one result found
             if (results.Results.Count == 1)
             {
-                return RedirectToAction("DetailedMovieView", new { imdb = results.Results[0].ImdbID});
+                return RedirectToAction("DetailedMovieView", new { imdb = results.Results[0].ImdbID });
             }
             return View("ListView", results);
         }
+
         public IActionResult NoResult()
         {
             return View();
@@ -207,11 +211,13 @@ namespace MovieAPIDB.Controllers
                 IMDBID = imdb
             };
             var check = _context.Favorites.Where(x => x.UserID == userID && x.IMDBID == imdb).FirstOrDefault();
+            //duplicate checking for favorites
             if (check is null)
             {
                 _context.Favorites.Add(add);
                 _context.SaveChanges();
             }
+            //refresh page
             return RedirectToAction("DetailedMovieView", new { imdb = add.IMDBID });
         }
 
@@ -224,16 +230,19 @@ namespace MovieAPIDB.Controllers
                 IMDBID = imdb
             };
             var check = _context.Favorites.Where(x => x.UserID == userID && x.IMDBID == imdb).FirstOrDefault();
+            //checking if favorite is present
             if (check != null)
             {
                 _context.Favorites.Remove(check);
                 _context.SaveChanges();
             }
+            //return to favorites list
             return RedirectToAction("Favorites");
         }
 
         public async Task<IActionResult> Favorites()
         {
+            //rerout back to index page if not logged in
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
                 return RedirectToAction("Login");
@@ -249,8 +258,10 @@ namespace MovieAPIDB.Controllers
             Search favorites = new Search()
             {
                 TotalResults = (int)data.Count,
+                //instantiate results list so future results can be added
                 Results = new List<SearchResult>()
             };
+            //call api to gather information on each favorite
             foreach (Favorite item in data)
             {
                 string endpoint = "?i=" + item.IMDBID + "&type=movie&apikey=" + apikey + "&r=json";
@@ -259,7 +270,7 @@ namespace MovieAPIDB.Controllers
                 SearchResult add = results.MapToSearchResult();
                 favorites.Results.Add(add);
             }
-            return View("Favorites",favorites);
+            return View("Favorites", favorites);
         }
 
         public IActionResult Logout()
