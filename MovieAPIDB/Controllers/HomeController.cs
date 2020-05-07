@@ -83,6 +83,7 @@ namespace MovieAPIDB.Controllers
             if (ModelState.IsValid)
             {
                 using var context = new MovieAPIDBContext();
+
                     if (model.Password == model.ConfirmPassword)
                 {
                     var user = new User()
